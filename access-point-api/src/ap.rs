@@ -47,8 +47,13 @@ pub enum AccessPointStatus {
 	WarningInfo(String),
 }
 
-pub struct AccessPointType {
+pub struct AccessPoint {
 	kind: AccessPointType,
 	location: Location,
 	status: AccessPointStatus,
+}
+
+
+pub struct AccessPoints {
+	points: Vec<AccessPoint>
 }
