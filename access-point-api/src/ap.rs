@@ -1,3 +1,5 @@
+#[macro_use] extern crate rocket;
+
 use std::{
 	fmt, 
 	collections::HashMap,
@@ -9,6 +11,8 @@ use strum_macros::EnumIter;
 use serde::{Serialize, Deserialize};
 
 use google_maps::geocoding::response::geocoding::Geocoding; // blegh
+
+use rocket::response::status;
 
 // An unsimplified AccessPoint type
 #[derive(Debug, EnumIter, Serialize, Deserialize)]
@@ -74,3 +78,8 @@ pub type APID = usize;
 pub struct AccessPoints {
 	pub points: HashMap<APID, AccessPoint>,
 }
+
+/*#[get("/ap/<id>")]
+fn get_ap(id: APID) -> status::Accepted<AccessPoint> {
+
+}*/
