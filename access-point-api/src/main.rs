@@ -1,3 +1,7 @@
+mod ap;
+mod map_geo;
+mod report;
+
 #[macro_use] extern crate rocket;
 
 use std::path::{PathBuf, Path};
@@ -22,6 +26,5 @@ async fn backend_msg() -> String {
 
 #[launch]
 fn rocket() -> _ {
-    dotenv::dotenv().ok();
     rocket::build().mount("/", routes![index, backend_msg, files])
 }
