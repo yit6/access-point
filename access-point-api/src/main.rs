@@ -1,6 +1,9 @@
-#[macro_use] extern crate rocket;
-
+mod ap;
+mod map_geo;
+mod report;
 mod user;
+
+#[macro_use] extern crate rocket;
 
 use std::path::{PathBuf, Path};
 use rocket::fs::NamedFile;

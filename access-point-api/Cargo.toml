@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-serde = { version = "*", features = ["derive"] }
 rocket = { version = "*", features = ["json"] }
+serde = { version = "1.0.214", features = ["derive"] }
+strum = "0.26"
+strum_macros = "0.26"
 pwhash = "*"
