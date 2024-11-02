@@ -3,14 +3,16 @@
 use std::path::{PathBuf, Path};
 use rocket::fs::NamedFile;
 
+const FRONTEND_LOCATION: &str = "../access-point-ui/dist/";
+
 #[get("/")]
 async fn index() -> Option<NamedFile> {
-    NamedFile::open(Path::new(&dotenv::var("FRONTEND_LOCATION").expect("No frontend location found")).join("index.html")).await.ok()
+    NamedFile::open(Path::new(FRONTEND_LOCATION).join("index.html")).await.ok()
 }
 
 #[get("/<file..>")]
 async fn files(file: PathBuf) -> Option<NamedFile> {
-    NamedFile::open(Path::new(&dotenv::var("FRONTEND_LOCATION").expect("No frontend location found")).join(file)).await.ok()
+    NamedFile::open(Path::new(FRONTEND_LOCATION).join(file)).await.ok()
 }
 
 #[get("/backend-msg")]
