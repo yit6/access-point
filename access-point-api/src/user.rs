@@ -1,3 +1,4 @@
+//! Store the state and handle API endpoints for user accounts
 use std::{collections::{HashMap, HashSet}, sync::{Arc, Mutex}};
 
 use rocket::{fairing::AdHoc, http::Status, serde::{json::Json, Deserialize}, State};
@@ -5,6 +6,7 @@ use pwhash::bcrypt;
 
 use crate::ap::APID;
 
+/// Create an AdHoc fairing to add the routes and manage the state.
 pub fn stage() -> AdHoc {
     AdHoc::on_ignite("Users", |rocket| async {
         rocket
@@ -16,8 +18,10 @@ pub fn stage() -> AdHoc {
     })
 }
 
+/// Represent a user account.
+/// Has a username, hashed password and a set of access_points.
 #[derive(Debug)]
-struct User {
+pub struct User {
     username: String,
     password: String,
     access_points: HashSet<APID>,
@@ -68,18 +72,23 @@ fn add_access_point(input: Json<DataAddAccessPoint>, users: &State<Users>) -> St
     }
 }
 
+/// Store list of [`User`]s
 #[derive(Debug)]
 pub struct Users {
     users: Arc<Mutex<HashMap<String,User>>>,
 }
 
 impl Users {
+
+    /// Create an new [`Users`] object with no [`User`]s
     pub fn new() -> Self {
         Users {
             users: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
+    /// Create a new [`User`].
+    /// Returns `Ok(())` on success and `Err(())` if there is a conflict.
     fn add(&self, user: User) -> Result<(),()> {
         let users = Arc::clone(&self.users);
         let mut users = users.lock().unwrap();
@@ -88,6 +97,8 @@ impl Users {
         Ok(())
     }
 
+    /// Add an access point into a [`User`] account.
+    /// Returns `Ok(())` on success and `Err(())` if the user doesn't exist.
     fn add_access_point(&self, username: &String, access_point: APID) -> Result<(), ()> {
         let users = Arc::clone(&self.users);
         let mut users = users.lock().unwrap();
