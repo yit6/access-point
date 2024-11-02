@@ -1,5 +1,7 @@
 #[macro_use] extern crate rocket;
 
+mod user;
+
 use std::path::{PathBuf, Path};
 use rocket::fs::NamedFile;
 
@@ -22,6 +24,5 @@ async fn backend_msg() -> String {
 
 #[launch]
 fn rocket() -> _ {
-    dotenv::dotenv().ok();
-    rocket::build().mount("/", routes![index, backend_msg, files])
+    rocket::build().mount("/", routes![index, backend_msg, files, crate::user::create_user])
 }
