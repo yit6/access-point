@@ -1,11 +1,14 @@
-use std::fmt;
+use std::{
+	fmt, 
+	collections::HashMap,
+};
 
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
 use serde::{Serialize, Deserialize};
 
-use crate::map_geo::*;
+use google_maps::geocoding::response::geocoding::Geocoding; // blegh
 
 // An unsimplified AccessPoint type
 #[derive(Debug, EnumIter, Serialize, Deserialize)]
@@ -44,24 +47,30 @@ impl RawAccessPointType {
 #[derive(Serialize, Deserialize)]
 pub struct AccessPointType(RawAccessPointType);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Default, Copy, Clone, Serialize, Deserialize)]
 pub enum AccessPointStatus {
 	Working,
 	InRepair,
+	#[default]
 	NotWorking,
-	Info(String),
-	WarningInfo(String),
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct AccessPoint {
 	kind: AccessPointType,
-	location: Location,
+	location: Geocoding,
 	status: AccessPointStatus,
 }
 
+impl AccessPoint {
+	pub fn set_status(&mut self, status: &AccessPointStatus) {
+		self.status = *status;
+	}
+}
+
+pub type APID = usize;
 
 #[derive(Serialize, Deserialize)]
 pub struct AccessPoints {
-	points: Vec<AccessPoint>,
+	pub points: HashMap<APID, AccessPoint>,
 }
