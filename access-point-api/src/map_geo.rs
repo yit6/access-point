@@ -1,4 +1,7 @@
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize)]
 pub struct Location {
-	latitude: f32,
-	longitude: f32,
+	pub latitude: f32,
+	pub longitude: f32,
 }

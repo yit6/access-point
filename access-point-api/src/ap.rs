@@ -1,10 +1,14 @@
+use std::fmt;
+
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-use std::fmt;
+
+use serde::{Serialize, Deserialize};
+
 use crate::map_geo::*;
 
 // An unsimplified AccessPoint type
-#[derive(Debug, EnumIter)]
+#[derive(Debug, EnumIter, Serialize, Deserialize)]
 enum RawAccessPointType {
 	Wheelchair,
 	Interpreter,
@@ -37,8 +41,10 @@ impl RawAccessPointType {
 
 
 // A guaranteed simplified AccessPoint type
+#[derive(Serialize, Deserialize)]
 pub struct AccessPointType(RawAccessPointType);
 
+#[derive(Serialize, Deserialize)]
 pub enum AccessPointStatus {
 	Working,
 	InRepair,
@@ -47,6 +53,7 @@ pub enum AccessPointStatus {
 	WarningInfo(String),
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct AccessPoint {
 	kind: AccessPointType,
 	location: Location,
@@ -54,6 +61,7 @@ pub struct AccessPoint {
 }
 
 
+#[derive(Serialize, Deserialize)]
 pub struct AccessPoints {
-	points: Vec<AccessPoint>
+	points: Vec<AccessPoint>,
 }
