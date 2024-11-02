@@ -29,4 +29,5 @@ fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![index, backend_msg, files, crate::user::create_user])
         .manage(crate::user::Users::new())
+        .attach(crate::ap::stage())
 }

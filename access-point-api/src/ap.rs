@@ -1,5 +1,3 @@
-#[macro_use] extern crate rocket;
-
 use std::{
 	fmt, 
 	collections::HashMap,
@@ -12,10 +10,18 @@ use serde::{Serialize, Deserialize};
 
 use google_maps::geocoding::response::geocoding::Geocoding; // blegh
 
-use rocket::response::status;
+use rocket::{http::Status, State, fairing::AdHoc};
+
+pub fn stage() -> AdHoc {
+	AdHoc::on_ignite("AccessPoints", |rocket| async {
+		rocket
+			.manage(AccessPoints::new())
+			.mount("/ap", routes![get_ap])
+	})
+}
 
 // An unsimplified AccessPoint type
-#[derive(Debug, EnumIter, Serialize, Deserialize)]
+#[derive(Debug, Clone, EnumIter, Serialize, Deserialize)]
 enum RawAccessPointType {
 	Wheelchair,
 	Interpreter,
@@ -48,10 +54,10 @@ impl RawAccessPointType {
 
 
 // A guaranteed simplified AccessPoint type
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessPointType(RawAccessPointType);
 
-#[derive(Default, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Copy, Clone, Serialize, Deserialize)]
 pub enum AccessPointStatus {
 	Working,
 	InRepair,
@@ -59,7 +65,7 @@ pub enum AccessPointStatus {
 	NotWorking,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessPoint {
 	kind: AccessPointType,
 	location: Geocoding,
@@ -79,7 +85,20 @@ pub struct AccessPoints {
 	pub points: HashMap<APID, AccessPoint>,
 }
 
-/*#[get("/ap/<id>")]
-fn get_ap(id: APID) -> status::Accepted<AccessPoint> {
+impl AccessPoints {
+	pub fn new() -> Self {
+		AccessPoints {
+			points: HashMap::new()
+		}
+	}
+}
 
-}*/
+#[get("/<id>")]
+fn get_ap(id: APID, group: &State<AccessPoints>) -> (Status, Option<String>) {
+	let _point = group.points.get(&id);
+	let point = match _point {
+		Some(n) => Some(serde_json::to_string(n).unwrap()),
+		None => None,
+	};
+	(match point {Some(_) => Status::Accepted, None => Status::NotFound}, point)
+}
