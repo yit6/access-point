@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-google_maps = "3.7.1"
-rocket="*"
-serde = "1.0.214"
+rocket = { version = "*", features = ["json"] }
+serde = { version = "1.0.214", features = ["derive"] }
 strum = "0.26"
 strum_macros = "0.26"
+pwhash = "*"
