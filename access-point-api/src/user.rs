@@ -40,13 +40,15 @@ struct DataCreateUser {
 }
 
 #[post("/", data="<input>")]
-fn create_user(input: Json<DataCreateUser>, users: &State<Users>) -> Status{
+fn create_user(input: Json<DataCreateUser>, users: &State<Users>) -> Status {
     let user = User::new(input.username.to_string(), input.password.to_string());
     if let Some(user) = user {
         println!("{:?}",user);
         println!("{:?}",users);
-        users.add(user);
-        Status::Ok
+        match users.add(user) {
+            Ok(_) => Status::Ok,
+            Err(_) => Status::Conflict,
+        }
     } else {
         Status::InternalServerError
     }
@@ -78,10 +80,12 @@ impl Users {
         }
     }
 
-    fn add(&self, user: User) {
+    fn add(&self, user: User) -> Result<(),()> {
         let users = Arc::clone(&self.users);
         let mut users = users.lock().unwrap();
+        if users.contains_key(&user.username) { return Err(()); }
         users.insert(user.username.clone(), user);
+        Ok(())
     }
 
     fn add_access_point(&self, username: &String, access_point: APID) -> Result<(), ()> {
