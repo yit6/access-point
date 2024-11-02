@@ -1,5 +1,4 @@
 mod ap;
-mod report;
 mod user;
 
 #[macro_use] extern crate rocket;

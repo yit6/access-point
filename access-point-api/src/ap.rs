@@ -1,6 +1,7 @@
 use std::{
 	fmt, 
 	collections::HashMap,
+	sync::{Arc, Mutex}
 };
 
 use strum::IntoEnumIterator;
@@ -10,7 +11,7 @@ use serde::{Serialize, Deserialize};
 
 use google_maps::geocoding::response::geocoding::Geocoding; // blegh
 
-use rocket::{http::Status, State, fairing::AdHoc};
+use rocket::{response::status, http::Status, State, fairing::AdHoc};
 
 pub fn stage() -> AdHoc {
 	AdHoc::on_ignite("AccessPoints", |rocket| async {
@@ -18,6 +19,38 @@ pub fn stage() -> AdHoc {
 			.manage(AccessPoints::new())
 			.mount("/ap", routes![get_ap])
 	})
+}
+
+#[allow(dead_code)]
+pub struct Report {
+	point: APID,
+	description: Option<String>,
+	status_change: AccessPointStatus,
+}
+
+impl Report {
+	pub fn new(point: APID) -> Self {
+		Report {
+			point, description: None,
+			status_change: AccessPointStatus::default(),
+		}
+	}
+
+	pub fn with_description(mut self, description: String) -> Self {
+		self.description = Some(description);
+		self
+	}
+
+	pub fn with_status(mut self, status: AccessPointStatus) -> Self {
+		self.status_change = status;
+		self
+	}
+
+	// change the result
+	pub fn fulfill(&self, group: &State<AccessPoints>) -> Result<(), ()> {
+		group.set_status(self.point, self.status_change);
+		Ok(())
+	}
 }
 
 // An unsimplified AccessPoint type
@@ -30,9 +63,9 @@ enum RawAccessPointType {
 }
 
 impl fmt::Display for RawAccessPointType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{:?}", self)
+	}
 }
 
 impl RawAccessPointType {
@@ -69,36 +102,50 @@ pub enum AccessPointStatus {
 pub struct AccessPoint {
 	kind: AccessPointType,
 	location: Geocoding,
-	status: AccessPointStatus,
-}
-
-impl AccessPoint {
-	pub fn set_status(&mut self, status: &AccessPointStatus) {
-		self.status = *status;
-	}
+	pub status: AccessPointStatus,
 }
 
 pub type APID = usize;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct AccessPoints {
-	pub points: HashMap<APID, AccessPoint>,
+	pub points: Arc<Mutex<HashMap<APID, AccessPoint>>>,
 }
 
 impl AccessPoints {
 	pub fn new() -> Self {
 		AccessPoints {
-			points: HashMap::new()
+			points: Arc::new(Mutex::new(HashMap::new())),
 		}
+	}
+
+	pub fn get_ap(&self, id: APID) -> Option<AccessPoint> {
+		let points = Arc::clone(&self.points);
+        let points = points.lock().unwrap();
+        Some(points.get(&id).unwrap().clone())
+	}
+
+	pub fn set_status(&self, id: APID, status: AccessPointStatus) {
+		let points = Arc::clone(&self.points);
+        let mut points = points.lock().unwrap();
+        points.get_mut(&id).unwrap().status = status;
 	}
 }
 
-#[get("/<id>")]
+#[get("/<id>", rank = 2)]
 fn get_ap(id: APID, group: &State<AccessPoints>) -> (Status, Option<String>) {
-	let _point = group.points.get(&id);
+	let _point = group.get_ap(id);
 	let point = match _point {
-		Some(n) => Some(serde_json::to_string(n).unwrap()),
+		Some(n) => Some(serde_json::to_string(&n).unwrap()),
 		None => None,
 	};
 	(match point {Some(_) => Status::Accepted, None => Status::NotFound}, point)
+}
+
+#[put("/issue/<id>")]
+fn report_issue(id: APID, group: &State<AccessPoints>) -> status::Accepted<()> {
+	Report::new(id)
+		.with_status(AccessPointStatus::NotWorking)
+		.fulfill(group);
+	status::Accepted(())
 }
