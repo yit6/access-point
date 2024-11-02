@@ -27,7 +27,6 @@ async fn backend_msg() -> String {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .manage(crate::user::Users::new())
-        .attach(crate::ap::stage())
-        .mount("/", routes![index, backend_msg, files, crate::user::create_user])
+        .mount("/", routes![index, backend_msg, files])
+        .attach(user::stage())
 }
