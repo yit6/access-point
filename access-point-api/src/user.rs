@@ -1,8 +1,9 @@
 //! Store the state and handle API endpoints for user accounts
-use std::{collections::{HashMap, HashSet}, sync::{Arc, Mutex}};
+use std::{collections::{HashMap, HashSet}, fs::{self, File}, io::Write, path::Path, sync::{Arc, Mutex}};
 
 use rocket::{fairing::AdHoc, http::Status, serde::{json::Json, Deserialize}, State};
 use pwhash::bcrypt;
+use serde::Serialize;
 
 use crate::ap::APID;
 
@@ -10,17 +11,19 @@ use crate::ap::APID;
 pub fn stage() -> AdHoc {
     AdHoc::on_ignite("Users", |rocket| async {
         rocket
-            .manage(Users::new())
+            .manage(Users::load(Path::new("data/users.json")).unwrap_or(Users::new()))
             .mount("/user", routes![
                 add_access_point,
                 create_user,
-            ])
+            ]).attach(AdHoc::on_shutdown("Users", |rocket| Box::pin(async {
+                rocket.state::<Users>().unwrap().save(&mut File::create("data/users.json").expect("Failed to open user file")).expect("Failed to save users");
+            })))
     })
 }
 
 /// Represent a user account.
 /// Has a username, hashed password and a set of access_points.
-#[derive(Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct User {
     username: String,
     password: String,
@@ -85,6 +88,23 @@ impl Users {
         Users {
             users: Arc::new(Mutex::new(HashMap::new())),
         }
+    }
+
+    /// Load user data from a JSON file
+    pub fn load(path: &Path) -> Option<Self> {
+        let users: HashMap<String, User> = serde_json::from_str(&fs::read_to_string(path).ok()?).ok()?;
+        Some(Users {
+            users: Arc::new(Mutex::new(users)),
+        })
+    }
+
+    /// Save user data into a JSON file
+    pub fn save(&self, file: &mut File) -> Result<(),std::io::Error> {
+        let mut users: HashMap<String, User> = HashMap::new();
+        for (name,user) in Arc::clone(&self.users).lock().unwrap().iter() {
+            users.insert(name.to_string(), user.clone());
+        }
+        file.write_all(serde_json::to_string(&users)?.as_bytes())
     }
 
     /// Create a new [`User`].
