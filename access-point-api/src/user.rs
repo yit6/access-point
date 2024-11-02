@@ -1,13 +1,18 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{collections::{HashMap, HashSet}, sync::{Arc, Mutex}};
 
-use rocket::{fairing::AdHoc, serde::{json::Json, Deserialize}, State};
+use rocket::{fairing::AdHoc, http::Status, serde::{json::Json, Deserialize}, State};
 use pwhash::bcrypt;
+
+use crate::ap::APID;
 
 pub fn stage() -> AdHoc {
     AdHoc::on_ignite("Users", |rocket| async {
         rocket
             .manage(Users::new())
-            .mount("/user", routes![create_user])
+            .mount("/user", routes![
+                add_access_point,
+                create_user,
+            ])
     })
 }
 
@@ -15,6 +20,7 @@ pub fn stage() -> AdHoc {
 struct User {
     username: String,
     password: String,
+    access_points: HashSet<APID>,
 }
 
 impl User {
@@ -22,6 +28,7 @@ impl User {
         Some(User {
             username,
             password: bcrypt::hash(password).ok()?,
+            access_points: HashSet::new(),
         })
     }
 }
@@ -33,12 +40,31 @@ struct DataCreateUser {
 }
 
 #[post("/", data="<input>")]
-fn create_user(input: Json<DataCreateUser>, users: &State<Users>) {
+fn create_user(input: Json<DataCreateUser>, users: &State<Users>) -> Status {
     let user = User::new(input.username.to_string(), input.password.to_string());
     if let Some(user) = user {
         println!("{:?}",user);
         println!("{:?}",users);
-        users.add(user);
+        match users.add(user) {
+            Ok(_) => Status::Ok,
+            Err(_) => Status::Conflict,
+        }
+    } else {
+        Status::InternalServerError
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct DataAddAccessPoint {
+    username: String,
+    access_point: APID,
+}
+
+#[post("/add", data="<input>")]
+fn add_access_point(input: Json<DataAddAccessPoint>, users: &State<Users>) -> Status {
+    match users.add_access_point(&input.username, input.access_point) {
+        Ok(_) => Status::Ok,
+        Err(_) => Status::NotFound,
     }
 }
 
@@ -54,9 +80,22 @@ impl Users {
         }
     }
 
-    fn add(&self, user: User) {
+    fn add(&self, user: User) -> Result<(),()> {
         let users = Arc::clone(&self.users);
         let mut users = users.lock().unwrap();
+        if users.contains_key(&user.username) { return Err(()); }
         users.insert(user.username.clone(), user);
+        Ok(())
+    }
+
+    fn add_access_point(&self, username: &String, access_point: APID) -> Result<(), ()> {
+        let users = Arc::clone(&self.users);
+        let mut users = users.lock().unwrap();
+
+        if let Some(user) = users.get_mut(username) {
+            user.access_points.insert(access_point);
+            return Ok(());
+        }
+        Err(())
     }
 }
