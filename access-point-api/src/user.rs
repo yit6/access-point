@@ -7,16 +7,18 @@ use serde::Serialize;
 
 use crate::ap::APID;
 
+const USERS_FILE: &str = "data/users.json";
+
 /// Create an AdHoc fairing to add the routes and manage the state.
 pub fn stage() -> AdHoc {
     AdHoc::on_ignite("Users", |rocket| async {
         rocket
-            .manage(Users::load(Path::new("data/users.json")).unwrap_or(Users::new()))
+            .manage(Users::load(Path::new(USERS_FILE)).unwrap_or(Users::new()))
             .mount("/user", routes![
                 add_access_point,
                 create_user,
             ]).attach(AdHoc::on_shutdown("Users", |rocket| Box::pin(async {
-                rocket.state::<Users>().unwrap().save(&mut File::create("data/users.json").expect("Failed to open user file")).expect("Failed to save users");
+                rocket.state::<Users>().unwrap().save(&mut File::create(USERS_FILE).expect("Failed to open user file")).expect("Failed to save users");
             })))
     })
 }
@@ -101,6 +103,8 @@ impl Users {
     /// Save user data into a JSON file
     pub fn save(&self, file: &mut File) -> Result<(),std::io::Error> {
         let mut users: HashMap<String, User> = HashMap::new();
+        
+        // TODO: This is terrible
         for (name,user) in Arc::clone(&self.users).lock().unwrap().iter() {
             users.insert(name.to_string(), user.clone());
         }
