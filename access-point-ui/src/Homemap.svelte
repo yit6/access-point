@@ -1,15 +1,5 @@
 {#if true}
-    <div class="tooltip">
-      <span>
-        <p>{hover.name}</p>
-        <p class = status>{hover.status}</p>
-      </span>
-      <span>
-        <button>Add to my routine</button>
-        <button onclick={(buttonProps) => reportProblem(buttonProps)}>Report as broken</button>
-      </span>
-      
-    </div>
+    <Infocard />
 {/if}
 <div class="deck-container">
 	<div id="map" bind:this={mapElement}></div>
@@ -23,6 +13,7 @@ import { ScatterplotLayer } from "@deck.gl/layers";
 import { Deck } from "@deck.gl/core";
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import Infocard from "./Infocard.svelte";
 
 let mapElement;
 let canvasElement;
@@ -55,18 +46,6 @@ fetch("/ap/").then(promise => {
 	});
 });
 
-async function reportProblem(props) {
-  try {
-    const url = `/ap/issue/${props.object.id}`;
-    const response = await fetch(url,{method:"PUT"});
-    if (!response.ok) {
-      console.log(response.status);
-    }
-    // ...
-  } catch (error) {
-    console.error(error.message);
-  }
-}
 
 function createMap() {
 	map = new maplibregl.Map({
@@ -160,17 +139,6 @@ function handleHover(layerType, hoverProps) {
     height: 100%;
 }
 
-.tooltip {
-  width: 90%;
-  height: 15%;
-  background: #ffffff;
-  border-radius: 20px;
-  margin-bottom: 1em;
-  color: #fff;
-  font-size: 16px;
-  z-index: 9;
-  pointer-events: none;
-}
 
 .UI-overlay{
   height: 100%;
@@ -188,7 +156,4 @@ p{
   color:rgb(0,0,0)
 }
 
-button{
-  z-index: 10;
-}
 </style>
