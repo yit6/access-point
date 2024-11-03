@@ -15,6 +15,8 @@ use rocket::{
 	serde::json::Json
 };
 
+use crate::user::Users;
+
 const POINTS_FILE: &str = "data/points.json";
 
 pub fn stage() -> AdHoc {
@@ -242,10 +244,11 @@ fn get_group(group: &State<AccessPoints>) -> (Status, AccessPointsSerDe) {
 }
 
 #[put("/issue/<id>")]
-fn report_issue(id: APID, group: &State<AccessPoints>) -> Status {
+fn report_issue(id: APID, group: &State<AccessPoints>, users: &State<Users>) -> Status {
 	Report::new(id)
 		.with_status(AccessPointStatus::NotWorking)
 		.fulfill(group);
+	
 	Status::Ok
 }
 
