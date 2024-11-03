@@ -122,6 +122,7 @@ pub enum AccessPointStatus {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessPoint {
+        name: String,
 	kind: AccessPointType,
 	location: Location,
 	pub status: AccessPointStatus,
@@ -131,6 +132,7 @@ impl AccessPoint {
 	pub fn from_lat_long(lat: f32, long: f32) -> Self {
 		AccessPoint {
 			kind: AccessPointType(RawAccessPointType::Any("".to_string())),
+                        name: "".to_string(),
 			location: Location { lat, long },
 			status: AccessPointStatus::NotWorking,
 		}
@@ -143,6 +145,11 @@ impl AccessPoint {
 
 	pub fn with_status(mut self, status: AccessPointStatus) -> Self {
 		self.status = status;
+		self
+	}
+
+	pub fn with_name(mut self, name: String) -> Self {
+		self.name = name;
 		self
 	}
 }
@@ -187,11 +194,11 @@ impl AccessPoints {
 		}
 	}
 
-	pub fn create_from_lat_long(&self, lat: f32, long: f32) -> AccessPoint {
+	pub fn create_from_lat_long(&self, lat: f32, long: f32, name: String) -> AccessPoint {
 		let points = Arc::clone(&self.points);
 		let id = self.next_id();
 		let mut points = points.lock().unwrap();
-		let access_point = AccessPoint::from_lat_long(lat, long);
+		let access_point = AccessPoint::from_lat_long(lat, long).with_name(name);
 		points.insert(id, access_point.clone());
 		println!("{:?}", &access_point);
 		access_point
@@ -254,12 +261,13 @@ fn report_issue(id: APID, group: &State<AccessPoints>, users: &State<Users>) -> 
 
 #[derive(Debug, Deserialize)]
 struct DataCreateAccessPoint {
+    name: String,
 	lat: f32,
 	long: f32,
 }
 
 #[post("/", data="<input>")]
 fn create_access_point(input: Json<DataCreateAccessPoint>, group: &State<AccessPoints>) -> Status {
-	group.create_from_lat_long(input.lat, input.long);
+	group.create_from_lat_long(input.lat, input.long, input.name.clone());
 	Status::Created
 }
