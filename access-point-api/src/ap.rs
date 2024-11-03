@@ -22,7 +22,12 @@ pub fn stage() -> AdHoc {
 		let points = AccessPoints::load(Path::new(POINTS_FILE)).unwrap_or(AccessPoints::new());
 		rocket
 			.manage(points)
-			.mount("/ap", routes![get_ap])
+			.mount("/ap", routes![
+                            create_access_point,
+                            get_ap,
+                            get_group,
+                            report_issue,
+                        ])
 				.attach(AdHoc::on_shutdown("Users", |rocket| Box::pin(async {
 				rocket.state::<AccessPoints>().unwrap().save(&mut File::create(POINTS_FILE).expect("Failed to open points file")).expect("Failed to save points")
 			})))
@@ -173,6 +178,7 @@ impl AccessPoints {
 	fn next_id(&self) -> APID {
 		let points = Arc::clone(&self.points);
 		let points = points.lock().unwrap();
+		
 		if points.keys().len() == 0 {
 			0
 		} else {
