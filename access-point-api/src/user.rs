@@ -18,6 +18,7 @@ pub fn stage() -> AdHoc {
                 add_access_point,
                 create_user,
                 get_user,
+                remove_access_point,
             ]).attach(AdHoc::on_shutdown("Users", |rocket| Box::pin(async {
                 rocket.state::<Users>().unwrap().save(&mut File::create(USERS_FILE).expect("Failed to open user file")).expect("Failed to save users");
             })))
@@ -73,6 +74,14 @@ struct DataAddAccessPoint {
 #[post("/add", data="<input>")]
 fn add_access_point(input: Json<DataAddAccessPoint>, users: &State<Users>) -> Status {
     match users.add_access_point(&input.username, input.access_point) {
+        Ok(_) => Status::Ok,
+        Err(_) => Status::NotFound,
+    }
+}
+
+#[delete("/remove/<username>/<id>")]
+fn remove_access_point(username: String, id: APID, users: &State<Users>) -> Status {
+    match users.remove_access_point(&username, id) {
         Ok(_) => Status::Ok,
         Err(_) => Status::NotFound,
     }
@@ -140,6 +149,18 @@ impl Users {
         if let Some(user) = users.get_mut(username) {
             user.access_points.insert(access_point);
             return Ok(());
+        }
+        Err(())
+    }
+
+    fn remove_access_point(&self, username: &String, access_point: APID) -> Result<(),()> {
+        let users = Arc::clone(&self.users);
+        let mut users = users.lock().unwrap();
+
+        if let Some(user) = users.get_mut(username) {
+            if user.access_points.remove(&access_point) {
+                return Ok(());
+            }
         }
         Err(())
     }
