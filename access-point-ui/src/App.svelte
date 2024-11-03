@@ -1,6 +1,7 @@
 <script lang="ts">
   import Counter from './lib/Counter.svelte'
-  import Homepage from './Homepage.svelte';
+  import Homepage from './Homemap.svelte';
+    import Homemap from './Homemap.svelte';
   async function get_message() {
     let res = await fetch("backend-msg");
     let message = await res.text();
@@ -18,5 +19,5 @@
         {:then message}
                 <p>{message}</p>
         {/await}
-        <Homepage/>
+        <Homemap />
 </main>
