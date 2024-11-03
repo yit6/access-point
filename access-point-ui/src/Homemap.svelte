@@ -1,15 +1,14 @@
+{#if hover.hoveredObject}
+    <div class="tooltip">
+      <p>{hover.APtype}</p>
+      <p>{hover.status}</p>
+    </div>
+{/if}
 <div class="deck-container">
 	<div id="map" bind:this={mapElement}></div>
 	<canvas id="deck-canvas" bind:this={canvasElement}></canvas>
 </div>
-<div class = "UI-overlay">
-  {#if hover.hoveredObject}
-    <div class="tooltip">
-      <p>{hover.APtype}    </p>
-      <p>{hover.status}</p>
-    </div>
-  {/if}
-</div>
+
 
 <script>
 import { onMount } from "svelte";
@@ -138,15 +137,11 @@ function handleHover(layerType, hoverProps) {
 }
 
 .tooltip {
-  margin-top:50px;
-  position: fixed;
-  display:flex;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background:  #75778d;
-  border-radius: 20px 20px 0 0;
-  color: #ffffff;
+  width: 90%;
+  height: 15%;
+  background: #75778d;
+  border-radius: 20px;
+  color: #fff;
   opacity: 80%;
   font-size: 10px;
   z-index: 9;

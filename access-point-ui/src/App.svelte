@@ -10,17 +10,19 @@
   let promise = get_message();
 </script>
 
-<main>
-        <Homemap />
-        <div class = "wrapper">
-                <BottomBar />
-        </div>
+<main>  
+        <Homemap />    
+        <BottomBar />
 </main>
 
 <style>
         main{
                 width: 100%;
                 height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                align-items: center;
         }
 
         .wrapper{

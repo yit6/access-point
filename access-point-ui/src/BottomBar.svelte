@@ -9,14 +9,13 @@
 
 <style>
 .bottom{
-    margin-top:auto;
-    position: fixed;
-    display: flex;
-    height:10%;
+    height: 10%;
     width: 90%;
     justify-content: space-evenly;
-    background-color: rgb(255,255,255);
-    border-radius: 13px 13px 0px 0px;
+    background-color: #fff;
+    border-radius: 13px 13px 0 0;
+    z-index: 8;
+    display: flex;
 }
 
 img{
