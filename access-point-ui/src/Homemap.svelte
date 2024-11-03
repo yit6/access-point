@@ -5,8 +5,8 @@
       <p class = status>{hover.hoveredObject.status}</p>
     </span>
     <span>
-      <button>Add to my routine</button>
-      <button onclick={(hoverObj)=>reportProblem(hoverObj)}>Report as broken</button>
+      <button onclick={()=>add_access_point(hover.hoveredObject.id)}>Add to my routine</button>
+      <button onclick={()=>reportProblem(hover.hoveredObject.id)}>Report as broken</button>
     </span> 
 </div>
 {/if}
@@ -52,6 +52,16 @@ async function reportProblem(APprops) {
             console.error(error.message);
         }
     }
+
+async function add_access_point(id) {
+  try {
+      const response = await fetch("/user/add",{method:"POST",
+        body: JSON.stringify({input:{username : "", access_point : id}})
+      });
+  } catch (error) {
+    console.error(error.message);
+  }
+}    
 
 
 onMount(() => {
