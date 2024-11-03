@@ -132,7 +132,7 @@ impl AccessPoint {
     pub fn from_lat_long(lat: f32, long: f32) -> Self {
         AccessPoint {
             kind: AccessPointType(RawAccessPointType::Any("".to_string())),
-            name: "".to_string(),
+            name: format!("Access point at {}, {}", lat, long),
             location: Location { lat, long },
             status: AccessPointStatus::NotWorking,
         }
