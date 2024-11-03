@@ -34,7 +34,6 @@ onMount(() => {
 		{ name: "elevator", coordinates: [-77.674, 43.081] },
 	];
 
-	console.log(inputAPs[0].position)
 	renderLayers({ data: inputAPs });
 });
 
@@ -57,7 +56,6 @@ function createDeck() {
 		controller: true,
 		// Change the map's viewState whenever the view state of deck.gl changes.
 		onViewStateChange: ({ viewState }) => {
-			console.info("State change!");
 			map.jumpTo({
 				center: [viewState.longitude, viewState.latitude],
 				zoom: viewState.zoom,
@@ -73,7 +71,6 @@ function createDeck() {
 function renderLayers(props) {
 	// If `deck` is null then return early to prevent errors.
 	if (!deck) { console.error("deck is null"); return; }
-	console.info("HEREEEE!!!!!!!!!!!!");
 
 	deck.setProps({
 		layers: createDataLayers(props)
@@ -82,7 +79,6 @@ function renderLayers(props) {
 
 function createDataLayers(props) {
 	const {data} = props;
-	console.debug("making layers");
 	return new ScatterplotLayer({
 		id: "scatterplot",
 		data: data,

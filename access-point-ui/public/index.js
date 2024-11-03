@@ -1,10 +1,35 @@
-const registerServiceWorker = async () => {
-	const swRegistration = await navigator.serviceWorker.register("service.js");
-	return swRegistration;
+const checkPermission = () => {
+    if (!('serviceWorker' in navigator)) {
+        throw new Error("No support for service worker!")
+    }
+
+    if (!('Notification' in window)) {
+        throw new Error("No support for notification API");
+    }
+
+    if (!('PushManager' in window)) {
+        throw new Error("No support for Push API")
+    }
+}
+
+const registerSW = async () => {
+    const registration = await navigator.serviceWorker.register('service.js');
+    return registration;
+}
+
+const requestNotificationPermission = async () => {
+    const permission = await Notification.requestPermission();
+
+    if (permission !== 'granted') {
+        throw new Error("Notification permission not granted")
+    }
+
 }
 
 const main = async () => {
-	const swRegistration = await registerServiceWorker();
+    checkPermission()
+    await requestNotificationPermission()
+    await registerSW()
 }
 
-main();
+main()
