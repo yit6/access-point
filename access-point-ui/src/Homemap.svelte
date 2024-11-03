@@ -1,4 +1,10 @@
 <div class="deck-container">
+  {#if hover.hoveredObject}
+    <div class="tooltip">
+      <p>{hover.APtype}    </p>
+      <p>{hover.status}</p>
+    </div>
+  {/if}
 	<div id="map" bind:this={mapElement}></div>
 	<canvas id="deck-canvas" bind:this={canvasElement}></canvas>
 </div>
@@ -14,10 +20,15 @@ let mapElement;
 let canvasElement;
 let map = null;
 let deck = null;
+let hover = {
+  x: 0,
+  y: 0,
+  hoveredObject: null
+};
 let viewState = {
-	longitude: -118.2443409,
-	latitude: 34.0544779,
-	zoom: 2,
+	longitude: -77.671,
+	latitude: 43.0849,
+	zoom: 15,
 	pitch: 0,
 	bearing: 0,
 };
@@ -28,13 +39,13 @@ onMount(() => {
 	
 	//make the layer reactive to changes, rerender each time layer data is changed
 	let inputAPs = [
-		{ name: "wheelchair lift", coordinates: [-77.671, 43.084] },
-		{ name: "interpreter", coordinates: [-77.672, 43.083] },
-		{ name: "elevator", coordinates: [-77.673, 43.082] },
-		{ name: "elevator", coordinates: [-77.674, 43.081] },
+		{ name: "wheelchair lift", coordinates: [-77.671, 43.084], status: "Working" },
+		{ name: "interpreter", coordinates: [-77.672, 43.083], status: "Working"  },
+		{ name: "elevator", coordinates: [-77.673, 43.082], status: "Watermelon"  },
+		{ name: "elevator", coordinates: [-77.674, 43.081], status: "Not working"  },
 	];
 
-	console.log(inputAPs[0].position)
+
 	renderLayers({ data: inputAPs });
 });
 
@@ -57,7 +68,6 @@ function createDeck() {
 		controller: true,
 		// Change the map's viewState whenever the view state of deck.gl changes.
 		onViewStateChange: ({ viewState }) => {
-			console.info("State change!");
 			map.jumpTo({
 				center: [viewState.longitude, viewState.latitude],
 				zoom: viewState.zoom,
@@ -73,7 +83,6 @@ function createDeck() {
 function renderLayers(props) {
 	// If `deck` is null then return early to prevent errors.
 	if (!deck) { console.error("deck is null"); return; }
-	console.info("HEREEEE!!!!!!!!!!!!");
 
 	deck.setProps({
 		layers: createDataLayers(props)
@@ -82,19 +91,33 @@ function renderLayers(props) {
 
 function createDataLayers(props) {
 	const {data} = props;
-	console.debug("making layers");
 	return new ScatterplotLayer({
 		id: "scatterplot",
 		data: data,
 		getPosition: d => d.coordinates,
 		getFillColor: d => [0, 128, 255],
-		getRadius: d => 5000,
+		getRadius: d => 5,
 		radiusScale: 6,
 		opacity: 0.5,
 		pickable: true,
 		radiusMinPixels: 0.25,
 		radiusMaxPixels: 30,
+    onClick: (hoverProps) => handleHover("scatterplotLayer", hoverProps),
 	});
+}
+
+function handleHover(layerType, hoverProps) {
+  let APtype, status;
+  if (layerType === "scatterplotLayer") {
+    APtype = hoverProps.object.name;
+    status = hoverProps.object.status;
+  }
+  // Set the coordinates for the tooltip.
+  hover.x = hoverProps.x;
+  hover.y = hoverProps.y;
+  hover.hoveredObject = hoverProps.object;
+  hover.APtype = APtype;
+  hover.status = status;
 }
 </script>
 
@@ -115,5 +138,23 @@ function createDataLayers(props) {
     left: 0;
     width: 100%;
     height: 100%;
-  }
+}
+
+.tooltip {
+  margin-top:50px;
+  position: absolute;
+  display:flex;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background:  #75778d;
+  border-radius: 20px 20px 0 0;
+  color: #ffffff;
+  opacity: 80%;
+  font-size: 10px;
+  z-index: 9;
+  pointer-events: none;
+}
+
+
 </style>
