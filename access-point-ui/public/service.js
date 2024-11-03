@@ -1,4 +1,4 @@
-/*const urlBase64ToUint8Array = base64String => {
+const urlBase64ToUint8Array = base64String => {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
         .replace(/\-/g, '+')
@@ -12,10 +12,10 @@
     }
 
     return outputArray;
-}*/
+}
 
 const saveSubscription = async (subscription) => {
-    const response = await fetch('https://localhost/save-subscription', {
+    const response = await fetch('https://quacc.us:443/save-subscription', {
         method: 'post',
         headers: { 'Content-type': "application/json" },
         body: JSON.stringify(subscription)
@@ -27,7 +27,7 @@ const saveSubscription = async (subscription) => {
 self.addEventListener("activate", async (e) => {
     const subscription = await self.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: "BFfiYMMTifkEj8l413FjPuPmmXMFd6f4vecuozDnHHDOgCMaxHKfV1mmA6U2_DmamgzO6DpnEgRW2XRdS5rW0ek"
+        applicationServerKey: urlBase64ToUint8Array("BFfiYMMTifkEj8l413FjPuPmmXMFd6f4vecuozDnHHDOgCMaxHKfV1mmA6U2_DmamgzO6DpnEgRW2XRdS5rW0ek")
     })
 
     const response = await saveSubscription(subscription)
