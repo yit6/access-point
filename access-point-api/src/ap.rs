@@ -7,12 +7,6 @@ use strum_macros::EnumIter;
 
 use serde::{Serialize, Deserialize};
 
-use google_maps::{
-	geocoding::response::geocoding::Geocoding, // blegh
-	LatLng,
-	prelude::{GoogleMapsClient, Decimal},
-};
-
 use rocket::{
 	fairing::AdHoc, 
 	http::Status, 
@@ -33,6 +27,12 @@ pub fn stage() -> AdHoc {
 				rocket.state::<AccessPoints>().unwrap().save(&mut File::create(POINTS_FILE).expect("Failed to open points file")).expect("Failed to save points")
 			})))
 	})
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Location {
+	lat: f32,
+	long: f32,
 }
 
 #[allow(dead_code)]
@@ -116,19 +116,15 @@ pub enum AccessPointStatus {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessPoint {
 	kind: AccessPointType,
-	location: Geocoding,
+	location: Location,
 	pub status: AccessPointStatus,
 }
 
 impl AccessPoint {
-	pub async fn from_lat_long(google_maps_client: &GoogleMapsClient, lat: f32, long: f32) -> Self {
+	pub fn from_lat_long(lat: f32, long: f32) -> Self {
 		AccessPoint {
 			kind: AccessPointType(RawAccessPointType::Any("".to_string())),
-			location: google_maps_client.reverse_geocoding(
-				LatLng::try_from_dec(
-					Decimal::from_f32_retain(lat).unwrap(), Decimal::from_f32_retain(long).unwrap()
-				).unwrap()
-			).execute().await.unwrap().results[0].clone(),
+			location: Location { lat, long },
 			status: AccessPointStatus::NotWorking,
 		}
 	}
@@ -180,10 +176,10 @@ impl AccessPoints {
 		points.keys().max().unwrap() + 1
 	}
 
-	pub async fn create_from_lat_long(&self, google_maps_client: &GoogleMapsClient, lat: f32, long: f32) -> AccessPoint {
+	pub fn create_from_lat_long(&self, lat: f32, long: f32) -> AccessPoint {
 		let points = Arc::clone(&self.points);
 		let mut points = points.lock().unwrap();
-		let access_point = AccessPoint::from_lat_long(google_maps_client, lat, long).await;
+		let access_point = AccessPoint::from_lat_long(lat, long);
 		points.insert(self.next_id(), access_point.clone());
 		access_point
 
@@ -249,7 +245,7 @@ struct DataCreateAccessPoint {
 }
 
 #[post("/", data="<input>")]
-async fn create_access_point(input: Json<DataCreateAccessPoint>, google_maps_client: &State<GoogleMapsClient>, group: &State<AccessPoints>) -> status::Accepted<()> {
-	group.create_from_lat_long(google_maps_client, input.lat, input.long);
+fn create_access_point(input: Json<DataCreateAccessPoint>, group: &State<AccessPoints>) -> status::Accepted<()> {
+	group.create_from_lat_long(input.lat, input.long);
 	status::Accepted(())
 }

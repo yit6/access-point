@@ -29,4 +29,5 @@ fn rocket() -> _ {
         .mount("/", routes![index, backend_msg, files])
         .attach(user::stage())
         .attach(ap::stage())
+        //.attach(maps::stage())
 }
