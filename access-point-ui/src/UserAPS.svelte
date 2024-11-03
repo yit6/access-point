@@ -15,12 +15,18 @@ onMount(async () => {
 		console.log(useraps);
 	});
 });
+
+let remove = (ap_remove) => {
+	return () => {
+		useraps = useraps.filter(ap => ap != ap_remove);
+	}
+}
 </script>
 
 <ul>
 	{#each useraps as ap}
 	<li>
-		<APCard access_point={ap}/>
+		<APCard access_point={ap} onclick={remove(ap)}/>
 	</li>
 	{:else}
 	<li><p>Loading...</p></li>
