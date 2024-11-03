@@ -1,12 +1,14 @@
-{#if hover.hoveredObject}
+<div class="deck-container">
+	<div id="map" bind:this={mapElement}></div>
+	<canvas id="deck-canvas" bind:this={canvasElement}></canvas>
+</div>
+<div class = "UI-overlay">
+  {#if hover.hoveredObject}
     <div class="tooltip">
       <p>{hover.APtype}    </p>
       <p>{hover.status}</p>
     </div>
   {/if}
-<div class="deck-container">
-	<div id="map" bind:this={mapElement}></div>
-	<canvas id="deck-canvas" bind:this={canvasElement}></canvas>
 </div>
 
 <script>
@@ -151,5 +153,12 @@ function handleHover(layerType, hoverProps) {
   pointer-events: none;
 }
 
+.UI-overlay{
+  height: 100%;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
 
 </style>

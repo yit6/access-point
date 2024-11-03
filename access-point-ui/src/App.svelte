@@ -12,12 +12,21 @@
 
 <main>
         <Homemap />
-        <BottomBar />
+        <div class = "wrapper">
+                <BottomBar />
+        </div>
 </main>
 
 <style>
         main{
                 width: 100%;
+                height: 100vh;
+        }
+
+        .wrapper{
                 height: 100%;
+                display:flex;
+                justify-content: center;
+                align-items: flex-end;
         }
 </style>
