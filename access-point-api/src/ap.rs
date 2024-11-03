@@ -173,7 +173,11 @@ impl AccessPoints {
 	fn next_id(&self) -> APID {
 		let points = Arc::clone(&self.points);
 		let points = points.lock().unwrap();
-		points.keys().max().unwrap_or(-1) + 1
+		if points.keys().len() == 0 {
+			0
+		} else {
+			points.keys().max().unwrap() + 1
+		}
 	}
 
 	pub fn create_from_lat_long(&self, lat: f32, long: f32) -> AccessPoint {
