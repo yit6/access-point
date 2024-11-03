@@ -19,8 +19,21 @@ onMount(async () => {
 	user.access_points.forEach(async (id) => {
 		let res = await fetch(`/ap/${id}`);
 		let ap = await res.json();
-		console.log(ap);
 		useraps.push(ap);
+		useraps.sort((a, b) => {
+			a = a.status;
+			b = b.status;
+
+			if (a == "NotWorking") { a = 0; }
+			if (a ==   "InRepair") { a = 1; }
+			if (a ==    "Working") { a = 2; }
+
+			if (b == "NotWorking") { b = 0; }
+			if (b ==   "InRepair") { b = 1; }
+			if (b ==    "Working") { b = 2; }
+
+			return a-b;
+		});
 		console.log(useraps);
 	});
 });
