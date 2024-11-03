@@ -1,5 +1,4 @@
 mod ap;
-mod report;
 mod user;
 
 #[macro_use] extern crate rocket;
@@ -27,6 +26,7 @@ async fn backend_msg() -> String {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![index, backend_msg, files, crate::user::create_user])
-        .manage(crate::user::Users::new())
+        .mount("/", routes![index, backend_msg, files])
+        .attach(user::stage())
+        .attach(ap::stage())
 }

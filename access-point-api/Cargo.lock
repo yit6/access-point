@@ -10,6 +10,7 @@ dependencies = [
  "pwhash",
  "rocket",
  "serde",
+ "serde_json",
  "strum",
  "strum_macros",
 ]
