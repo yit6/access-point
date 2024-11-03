@@ -1,5 +1,6 @@
 <script>
 import APCard from './APCard.svelte';
+import BottomBar from './BottomBar.svelte';
 import Logout from './Logout.svelte';
 import { onMount } from 'svelte';
 let useraps = $state([ ]);
@@ -43,3 +44,4 @@ let remove = (ap_remove) => {
 	{/each}
 </ul>
 <Logout />
+<BottomBar />
