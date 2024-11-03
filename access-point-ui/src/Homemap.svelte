@@ -43,7 +43,7 @@ let viewState = {
 
 async function reportProblem(APprops) {
         try {
-            const url = `/ap/issue/${APprops.object.id}`;
+            const url = `/ap/issue/${APprops}`;
             const response = await fetch(url,{method:"PUT"});
             if (!response.ok) {
             console.log(response.status);
