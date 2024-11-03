@@ -129,7 +129,12 @@ function createDataLayers(props) {
 		id: "scatterplot",
 		data: data,
 		getPosition: d => [d.location.long, d.location.lat],
-		getFillColor: d => [0, 128, 255],
+		getFillColor: d => {
+			if (d.status[0] == 'N') { return [255,0,0]; }
+			if (d.status[0] == 'I') { return [255,128,0]; }
+			if (d.status[0] == 'W') { return [0,128,255]; }
+			console.log(d); return [255, 0, 255];
+		},
 		getRadius: d => 5,
 		radiusScale: 6,
 		opacity: 0.5,
