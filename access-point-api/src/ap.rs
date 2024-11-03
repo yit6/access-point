@@ -190,7 +190,7 @@ impl AccessPoints {
 		let id = self.next_id();
 		let mut points = points.lock().unwrap();
 		let access_point = AccessPoint::from_lat_long(lat, long);
-		points.insert(self.next_id(), access_point.clone());
+		points.insert(id, access_point.clone());
 		println!("{:?}", &access_point);
 		access_point
 
