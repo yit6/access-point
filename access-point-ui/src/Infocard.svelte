@@ -3,17 +3,7 @@
     //hoverPoint is the object of the access point being hovered over on
     let {info} = $props();
 
-    async function reportProblem(APprops) {
-        try {
-            const url = `/ap/issue/${APprops.object.id}`;
-            const response = await fetch(url,{method:"PUT"});
-            if (!response.ok) {
-            console.log(response.status);
-            }
-        } catch (error) {
-            console.error(error.message);
-        }
-    }
+    
 </script>
 
 <div class="tooltip">
