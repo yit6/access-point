@@ -5,7 +5,6 @@
   async function get_message() {
     let res = await fetch("backend-msg");
     let message = await res.text();
-    console.log(message);
     return message;
   }
   let promise = get_message();
