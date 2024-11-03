@@ -62,7 +62,7 @@ function createDeck() {
 		width: "100%",
 		height: "100%",
 		initialViewState: viewState,
-		controller: true,
+		controller: {dragRotate: false},
 		// Change the map's viewState whenever the view state of deck.gl changes.
 		onViewStateChange: ({ viewState }) => {
 			map.jumpTo({
