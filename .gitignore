@@ -1,2 +1,4 @@
 */.env
 secrets/*
+Rocket.toml
+Cargo.lock
