@@ -23,6 +23,6 @@ onMount(async () => {
 		<APCard access_point={ap}/>
 	</li>
 	{:else}
-	<li><p>No access points yet</p></li>
+	<li><p>Loading...</p></li>
 	{/each}
 </ul>
