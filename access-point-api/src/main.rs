@@ -13,7 +13,7 @@ async fn index() -> Option<NamedFile> {
     NamedFile::open(Path::new(FRONTEND_LOCATION).join("index.html")).await.ok()
 }
 
-#[get("/<file..>")]
+#[get("/<file..>", rank = 100)]
 async fn files(file: PathBuf) -> Option<NamedFile> {
     NamedFile::open(Path::new(FRONTEND_LOCATION).join(file)).await.ok()
 }

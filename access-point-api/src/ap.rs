@@ -226,14 +226,14 @@ impl AccessPoints {
 	}
 }
 
-#[get("/<id>", rank = 2)]
+#[get("/<id>")]
 fn get_ap(id: APID, group: &State<AccessPoints>) -> (Status, Option<String>) {
 	let _point = group.get_ap(id);
 	let point = match _point {
 		Some(n) => Some(serde_json::to_string(&n).unwrap()),
 		None => None,
 	};
-	(match point {Some(_) => Status::Accepted, None => Status::NotFound}, point)
+	(match point {Some(_) => Status::Ok, None => Status::NotFound}, point)
 }
 
 #[get("/")]
