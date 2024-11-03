@@ -1,6 +1,7 @@
 <script lang="ts">
   import Counter from './lib/Counter.svelte'
   import Homemap from './Homemap.svelte';
+    import BottomBar from './BottomBar.svelte';
   async function get_message() {
     let res = await fetch("backend-msg");
     let message = await res.text();
@@ -10,14 +11,8 @@
 </script>
 
 <main>
-        <p>Svelte frontend</p>
-        <Counter />
-        {#await promise}
-                <p>Loading...</p>
-        {:then message}
-                <p>{message}</p>
-        {/await}
         <Homemap />
+        <BottomBar />
 </main>
 
 <style>

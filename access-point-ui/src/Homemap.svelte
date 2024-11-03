@@ -37,7 +37,7 @@ onMount(() => {
 	createMap();
 	createDeck();
 
-	let promise = fetch("/ap/").then(promise => {
+fetch("/ap/").then(promise => {
 		promise.json().then(aps => {
 			renderLayers({ data: Object.values(aps) });
 		});
