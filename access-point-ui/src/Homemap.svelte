@@ -1,4 +1,4 @@
-{#if true}
+{#if hover.hoveredObject}
   <div class="tooltip">
     <span>
       <p>{hover.hoveredObject.name}</p>
