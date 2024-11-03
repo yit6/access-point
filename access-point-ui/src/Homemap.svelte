@@ -178,6 +178,17 @@ function handleHover(layerType, hoverProps) {
   justify-content: flex-end;
 }
 
+.tooltip{
+  width: 90%;
+  height: 15%;
+  background: #ffffff;
+  border-radius: 20px;
+  margin-bottom: 1em;
+  color: #fff;
+  font-size: 16px;
+  z-index: 9;        
+}
+
 p{
   color:rgb(0,0,0)
 }
