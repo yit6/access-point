@@ -44,7 +44,7 @@ pub struct Location {
 
 #[allow(dead_code)]
 pub struct Report {
-	point: APID,
+	pub point: APID,
 	description: Option<String>,
 	status_change: AccessPointStatus,
 }

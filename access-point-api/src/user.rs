@@ -134,7 +134,7 @@ impl Users {
         Err(())
     }
 
-    fn get_users_with_access_point(&self, id: APID) -> Vec<String> {
+    pub fn get_users_with_access_point(&self, id: APID) -> Vec<String> {
         let users = Arc::clone(&self.users);
         let users = users.lock().unwrap();
         users.values().filter_map(|user| {

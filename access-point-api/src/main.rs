@@ -1,6 +1,6 @@
 mod ap;
 mod user;
-mod notification;
+//mod notification;
 
 #[macro_use] extern crate rocket;
 
