@@ -1,7 +1,5 @@
 use std::{
-	fmt, 
-	collections::HashMap,
-	sync::{Arc, Mutex}
+	collections::HashMap, fmt, fs::{self, File}, io::Write, path::Path, sync::{Arc, Mutex}
 };
 
 use strum::IntoEnumIterator;
@@ -11,13 +9,19 @@ use serde::{Serialize, Deserialize};
 
 use google_maps::geocoding::response::geocoding::Geocoding; // blegh
 
-use rocket::{response::status, http::Status, State, fairing::AdHoc};
+use rocket::{fairing::AdHoc, http::Status, response::status, State};
+
+const POINTS_FILE: &str = "data/points.json";
 
 pub fn stage() -> AdHoc {
 	AdHoc::on_ignite("AccessPoints", |rocket| async {
+	    let points = AccessPoints::load(Path::new(POINTS_FILE)).unwrap_or(AccessPoints::new());
 		rocket
-			.manage(AccessPoints::new())
+			.manage(points)
 			.mount("/ap", routes![get_ap])
+		        .attach(AdHoc::on_shutdown("Users", |rocket| Box::pin(async {
+			    rocket.state::<AccessPoints>().unwrap().save(&mut File::create(POINTS_FILE).expect("Failed to open points file")).expect("Failed to save points")
+			})))
 	})
 }
 
@@ -117,6 +121,23 @@ impl AccessPoints {
 		AccessPoints {
 			points: Arc::new(Mutex::new(HashMap::new())),
 		}
+	}
+
+	pub fn load(path: &Path) -> Option<Self> {
+	    let access_points = serde_json::from_str(&fs::read_to_string(path).ok()?).ok()?;
+	    Some(AccessPoints {
+		points: Arc::new(Mutex::new(access_points)),
+	    })
+	}
+
+	pub fn save(&self, file: &mut File) -> Result<(),std::io::Error> {
+	    let mut access_points: HashMap<APID, AccessPoint> = HashMap::new();
+
+	    // TODO: This is terrible
+	    for (apid,access_point) in Arc::clone(&self.points).lock().unwrap().iter() {
+		access_points.insert(*apid, access_point.clone());
+	    }
+	    file.write_all(serde_json::to_string(&access_points)?.as_bytes())
 	}
 
 	pub fn get_ap(&self, id: APID) -> Option<AccessPoint> {
