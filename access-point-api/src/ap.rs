@@ -7,20 +7,30 @@ use strum_macros::EnumIter;
 
 use serde::{Serialize, Deserialize};
 
-use google_maps::geocoding::response::geocoding::Geocoding; // blegh
+use google_maps::{
+	geocoding::response::geocoding::Geocoding, // blegh
+	LatLng,
+	prelude::{GoogleMapsClient, Decimal},
+};
 
-use rocket::{fairing::AdHoc, http::Status, response::status, State};
+use rocket::{
+	fairing::AdHoc, 
+	http::Status, 
+	response::status, 
+	State, 
+	serde::json::Json
+};
 
 const POINTS_FILE: &str = "data/points.json";
 
 pub fn stage() -> AdHoc {
 	AdHoc::on_ignite("AccessPoints", |rocket| async {
-	    let points = AccessPoints::load(Path::new(POINTS_FILE)).unwrap_or(AccessPoints::new());
+		let points = AccessPoints::load(Path::new(POINTS_FILE)).unwrap_or(AccessPoints::new());
 		rocket
 			.manage(points)
 			.mount("/ap", routes![get_ap])
-		        .attach(AdHoc::on_shutdown("Users", |rocket| Box::pin(async {
-			    rocket.state::<AccessPoints>().unwrap().save(&mut File::create(POINTS_FILE).expect("Failed to open points file")).expect("Failed to save points")
+				.attach(AdHoc::on_shutdown("Users", |rocket| Box::pin(async {
+				rocket.state::<AccessPoints>().unwrap().save(&mut File::create(POINTS_FILE).expect("Failed to open points file")).expect("Failed to save points")
 			})))
 	})
 }
@@ -56,6 +66,7 @@ impl Report {
 		Ok(())
 	}
 }
+
 
 // An unsimplified AccessPoint type
 #[derive(Debug, Clone, EnumIter, Serialize, Deserialize)]
@@ -109,11 +120,51 @@ pub struct AccessPoint {
 	pub status: AccessPointStatus,
 }
 
+impl AccessPoint {
+	pub async fn from_lat_long(google_maps_client: &GoogleMapsClient, lat: f32, long: f32) -> Self {
+		AccessPoint {
+			kind: AccessPointType(RawAccessPointType::Any("".to_string())),
+			location: google_maps_client.reverse_geocoding(
+				LatLng::try_from_dec(
+					Decimal::from_f32_retain(lat).unwrap(), Decimal::from_f32_retain(long).unwrap()
+				).unwrap()
+			).execute().await.unwrap().results[0].clone(),
+			status: AccessPointStatus::NotWorking,
+		}
+	}
+
+	pub fn with_type(mut self, kind: AccessPointType) -> Self {
+		self.kind = kind;
+		self
+	}
+
+	pub fn with_status(mut self, status: AccessPointStatus) -> Self {
+		self.status = status;
+		self
+	}
+}
+
 pub type APID = usize;
 
 #[derive(Debug)]
 pub struct AccessPoints {
 	pub points: Arc<Mutex<HashMap<APID, AccessPoint>>>,
+}
+
+#[derive(Debug, Responder, Serialize, Deserialize)]
+struct AccessPointsSerDe {
+	pub points: String,
+}
+
+impl AccessPointsSerDe {
+	pub fn from_group(group: &State<AccessPoints>) -> Self {
+		let points = Arc::clone(&group.points);
+		let points = points.lock().unwrap();
+		let points = serde_json::to_string(&points.clone()).unwrap();
+		AccessPointsSerDe {
+			points,
+		}
+	}
 }
 
 impl AccessPoints {
@@ -123,33 +174,48 @@ impl AccessPoints {
 		}
 	}
 
+	fn next_id(&self) -> APID {
+		let points = Arc::clone(&self.points);
+		let points = points.lock().unwrap();
+		points.keys().max().unwrap() + 1
+	}
+
+	pub async fn create_from_lat_long(&self, google_maps_client: &GoogleMapsClient, lat: f32, long: f32) -> AccessPoint {
+		let points = Arc::clone(&self.points);
+		let mut points = points.lock().unwrap();
+		let access_point = AccessPoint::from_lat_long(google_maps_client, lat, long).await;
+		points.insert(self.next_id(), access_point.clone());
+		access_point
+
+	}
+
 	pub fn load(path: &Path) -> Option<Self> {
-	    let access_points = serde_json::from_str(&fs::read_to_string(path).ok()?).ok()?;
-	    Some(AccessPoints {
+		let access_points = serde_json::from_str(&fs::read_to_string(path).ok()?).ok()?;
+		Some(AccessPoints {
 		points: Arc::new(Mutex::new(access_points)),
-	    })
+		})
 	}
 
 	pub fn save(&self, file: &mut File) -> Result<(),std::io::Error> {
-	    let mut access_points: HashMap<APID, AccessPoint> = HashMap::new();
+		let mut access_points: HashMap<APID, AccessPoint> = HashMap::new();
 
-	    // TODO: This is terrible
-	    for (apid,access_point) in Arc::clone(&self.points).lock().unwrap().iter() {
+		// TODO: This is terrible
+		for (apid,access_point) in Arc::clone(&self.points).lock().unwrap().iter() {
 		access_points.insert(*apid, access_point.clone());
-	    }
-	    file.write_all(serde_json::to_string(&access_points)?.as_bytes())
+		}
+		file.write_all(serde_json::to_string(&access_points)?.as_bytes())
 	}
 
 	pub fn get_ap(&self, id: APID) -> Option<AccessPoint> {
 		let points = Arc::clone(&self.points);
-        let points = points.lock().unwrap();
-        Some(points.get(&id).unwrap().clone())
+		let points = points.lock().unwrap();
+		Some(points.get(&id).unwrap().clone())
 	}
 
 	pub fn set_status(&self, id: APID, status: AccessPointStatus) {
 		let points = Arc::clone(&self.points);
-        let mut points = points.lock().unwrap();
-        points.get_mut(&id).unwrap().status = status;
+		let mut points = points.lock().unwrap();
+		points.get_mut(&id).unwrap().status = status;
 	}
 }
 
@@ -163,10 +229,27 @@ fn get_ap(id: APID, group: &State<AccessPoints>) -> (Status, Option<String>) {
 	(match point {Some(_) => Status::Accepted, None => Status::NotFound}, point)
 }
 
+#[get("/")]
+fn get_group(group: &State<AccessPoints>) -> status::Accepted<AccessPointsSerDe> {
+	status::Accepted(AccessPointsSerDe::from_group(group))
+}
+
 #[put("/issue/<id>")]
 fn report_issue(id: APID, group: &State<AccessPoints>) -> status::Accepted<()> {
 	Report::new(id)
 		.with_status(AccessPointStatus::NotWorking)
 		.fulfill(group);
+	status::Accepted(())
+}
+
+#[derive(Debug, Deserialize)]
+struct DataCreateAccessPoint {
+	lat: f32,
+	long: f32,
+}
+
+#[post("/", data="<input>")]
+async fn create_access_point(input: Json<DataCreateAccessPoint>, google_maps_client: &State<GoogleMapsClient>, group: &State<AccessPoints>) -> status::Accepted<()> {
+	group.create_from_lat_long(google_maps_client, input.lat, input.long);
 	status::Accepted(())
 }
