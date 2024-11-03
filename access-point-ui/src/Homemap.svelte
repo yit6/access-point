@@ -1,4 +1,4 @@
-{#if hover.hoveredObject}
+{#if true}
   <div class="tooltip">
     <span>
       <p>{hover.hoveredObject.name}</p>
@@ -54,9 +54,10 @@ async function reportProblem(APprops) {
     }
 
 async function add_access_point(id) {
+  let uname = document.cookie.split(";").find((row)=>row.trim().startsWith("username="));
   try {
       const response = await fetch("/user/add",{method:"POST",
-        body: JSON.stringify({input:{username : "", access_point : id}})
+        body: JSON.stringify({input:{username : uname, access_point : id}})
       });
   } catch (error) {
     console.error(error.message);
