@@ -1,10 +1,10 @@
-<div class="deck-container">
-  {#if hover.hoveredObject}
+{#if hover.hoveredObject}
     <div class="tooltip">
       <p>{hover.APtype}    </p>
       <p>{hover.status}</p>
     </div>
   {/if}
+<div class="deck-container">
 	<div id="map" bind:this={mapElement}></div>
 	<canvas id="deck-canvas" bind:this={canvasElement}></canvas>
 </div>
@@ -37,6 +37,7 @@ onMount(() => {
 	createMap();
 	createDeck();
 	
+  //inputs are put in as longitude then latitude
 	//make the layer reactive to changes, rerender each time layer data is changed
 	let inputAPs = [
 		{ name: "wheelchair lift", coordinates: [-77.671, 43.084], status: "Working" },
@@ -142,7 +143,7 @@ function handleHover(layerType, hoverProps) {
 
 .tooltip {
   margin-top:50px;
-  position: absolute;
+  position: fixed;
   display:flex;
   justify-content: center;
   width: 100%;
