@@ -16,11 +16,17 @@
     border-radius: 13px 13px 0 0;
     z-index: 8;
     display: flex;
+    align-items: flex-end;
 }
 
 img{
     padding: 2.2%;
+    height: 75%;
     fill:#424994;
+}
+
+a{
+    height: 80%;
 }
 
 </style>

@@ -1,7 +1,14 @@
 {#if hover.hoveredObject}
     <div class="tooltip">
-      <p>{hover.APtype}</p>
-      <p>{hover.status}</p>
+      <span>
+        <p>{hover.APtype}</p>
+        <p class = status>{hover.status}</p>
+      </span>
+      <span>
+        <button>Add to my routine</button>
+        <button>Report as broken</button>
+      </span>
+      
     </div>
 {/if}
 <div class="deck-container">
@@ -139,11 +146,11 @@ function handleHover(layerType, hoverProps) {
 .tooltip {
   width: 90%;
   height: 15%;
-  background: #75778d;
+  background: #ffffff;
   border-radius: 20px;
+  margin-bottom: 2em;
   color: #fff;
-  opacity: 80%;
-  font-size: 10px;
+  font-size: 16px;
   z-index: 9;
   pointer-events: none;
 }
@@ -156,4 +163,11 @@ function handleHover(layerType, hoverProps) {
   justify-content: flex-end;
 }
 
+p{
+  color:rgb(0,0,0)
+}
+
+.status{
+  color:rgb(0,0,0)
+}
 </style>
