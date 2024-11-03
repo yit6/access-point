@@ -175,8 +175,10 @@ impl AccessPoints {
 		}
 	}
 
-	// guaranteed lock
 	fn next_id(&self) -> APID {
+		let points = Arc::clone(&self.points);
+		let id = self.next_id();
+		let points = points.lock().unwrap();
 		if points.keys().len() == 0 {
 			0
 		} else {
@@ -186,10 +188,10 @@ impl AccessPoints {
 
 	pub fn create_from_lat_long(&self, lat: f32, long: f32) -> AccessPoint {
 		let points = Arc::clone(&self.points);
-                let id = self.next_id();
 		let mut points = points.lock().unwrap();
 		let access_point = AccessPoint::from_lat_long(lat, long);
-		points.insert(id, access_point.clone());
+		points.insert(self.next_id(), access_point.clone());
+		println!("{:?}", &access_point);
 		access_point
 
 	}
@@ -235,16 +237,16 @@ fn get_ap(id: APID, group: &State<AccessPoints>) -> (Status, Option<String>) {
 }
 
 #[get("/")]
-fn get_group(group: &State<AccessPoints>) -> status::Accepted<AccessPointsSerDe> {
-	status::Accepted(AccessPointsSerDe::from_group(group))
+fn get_group(group: &State<AccessPoints>) -> (Status, AccessPointsSerDe) {
+	(Status::Ok, AccessPointsSerDe::from_group(group))
 }
 
 #[put("/issue/<id>")]
-fn report_issue(id: APID, group: &State<AccessPoints>) -> status::Accepted<()> {
+fn report_issue(id: APID, group: &State<AccessPoints>) -> Status {
 	Report::new(id)
 		.with_status(AccessPointStatus::NotWorking)
 		.fulfill(group);
-	status::Accepted(())
+	Status::Ok
 }
 
 #[derive(Debug, Deserialize)]
@@ -254,7 +256,7 @@ struct DataCreateAccessPoint {
 }
 
 #[post("/", data="<input>")]
-fn create_access_point(input: Json<DataCreateAccessPoint>, group: &State<AccessPoints>) -> status::Accepted<()> {
+fn create_access_point(input: Json<DataCreateAccessPoint>, group: &State<AccessPoints>) -> Status {
 	group.create_from_lat_long(input.lat, input.long);
-	status::Accepted(())
+	Status::Created
 }
