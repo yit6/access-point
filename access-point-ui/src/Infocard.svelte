@@ -1,13 +1,15 @@
 <script>
-    let {name,status,apProps} = $props();
-    async function reportProblem(props) {
+    //name and status are the name and status of the access point
+    //hoverPoint is the object of the access point being hovered over on
+    let {info} = $props();
+
+    async function reportProblem(APprops) {
         try {
-            const url = `/ap/issue/${props.object.id}`;
+            const url = `/ap/issue/${APprops.object.id}`;
             const response = await fetch(url,{method:"PUT"});
             if (!response.ok) {
             console.log(response.status);
             }
-            // ...
         } catch (error) {
             console.error(error.message);
         }
@@ -21,7 +23,7 @@
     </span>
     <span>
       <button>Add to my routine</button>
-      <button onclick={()=>console.log("clicked")}>Report as broken</button>
+      <button onclick={()=>reportProblem(hoverPoint)}>Report as broken</button>
     </span>
     
   </div>
