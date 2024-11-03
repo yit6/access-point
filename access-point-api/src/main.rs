@@ -6,8 +6,6 @@ mod user;
 use std::{fs, path::{PathBuf, Path}, sync::{Arc, Mutex}};
 use rocket::{http::Status, fs::NamedFile, serde::json::Json, State};
 use web_push::*;
-use base64;
-use base64::{engine::general_purpose, Engine as _};
 
 const FRONTEND_LOCATION: &str = "../access-point-ui/dist/";
 
@@ -80,28 +78,25 @@ impl NotificationServer {
 async fn save_subscription(input: Json<SubscriptionInfo>, serve: &State<NotificationServer>) -> (Status, String) {
     let file = fs::read_to_string("./secrets/private.txt").unwrap();
 
-    println!("{:?}", &input);
+    let mut sig_builder = VapidSignatureBuilder::from_base64(&file, URL_SAFE_NO_PAD, &input).unwrap();
 
-    serve.set(
-        VapidSignatureBuilder::from_base64(&file, URL_SAFE_NO_PAD, &input).unwrap()
+    serve.set(sig_builder
             .build().unwrap(),
         input.into_inner()
     );
-
-    println!("{:?}", serve.get_signature() );
 
     (Status::Ok, serde_json::json!("Subscribed!").to_string())
 }
 
 #[get("/send-notification")]
 async fn send_notification(serve: &State<NotificationServer>) -> Status {
-    serve.notification("Your mouth is dry.");
+    serve.notification("Test Notification.");
 
     let s = serve.get_sub();
     let mut builder = WebPushMessageBuilder::new(&s);
     let n = serve.get_notification();
     let content = n.as_bytes();
-    builder.set_payload(ContentEncoding::Aes128Gcm, content);
+    builder.set_payload(ContentEncoding::AesGcm, content);
     let g = serve.get_signature().clone();
     builder.set_vapid_signature(g);
 
@@ -110,6 +105,8 @@ async fn send_notification(serve: &State<NotificationServer>) -> Status {
     client.send(message).await.unwrap();
     Status::Ok
 }
+
+
 
 #[launch]
 fn rocket() -> _ {

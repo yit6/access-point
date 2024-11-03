@@ -27,7 +27,7 @@ const saveSubscription = async (subscription) => {
 self.addEventListener("activate", async (e) => {
     const subscription = await self.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array("BFfiYMMTifkEj8l413FjPuPmmXMFd6f4vecuozDnHHDOgCMaxHKfV1mmA6U2_DmamgzO6DpnEgRW2XRdS5rW0ek")
+        applicationServerKey: "BCl1nRIpzter17Vhu8_O73GUJ-9zGm5oUxlO8twXnh55atinGUX6quUm-8Hrq__szDuawfG7WGHcU38J-he-QOs"
     })
 
     const response = await saveSubscription(subscription)
@@ -35,5 +35,5 @@ self.addEventListener("activate", async (e) => {
 })
 
 self.addEventListener("push", e => {
-    self.registration.showNotification("Wohoo!!", { body: e.data.text() })
+    self.registration.showNotification("Got it", { body: e.data.text() })
 })
