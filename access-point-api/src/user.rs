@@ -1,7 +1,7 @@
 //! Store the state and handle API endpoints for user accounts
 use std::{collections::{HashMap, HashSet}, fs::{self, File}, io::Write, path::Path, sync::{Arc, Mutex}};
 
-use rocket::{fairing::AdHoc, http::Status, serde::{json::Json, Deserialize}, State};
+use rocket::{fairing::AdHoc, http::{ContentType, Status}, serde::{json::Json, Deserialize}, State};
 use pwhash::bcrypt;
 use serde::Serialize;
 
@@ -17,6 +17,7 @@ pub fn stage() -> AdHoc {
             .mount("/user", routes![
                 add_access_point,
                 create_user,
+                get_user,
             ]).attach(AdHoc::on_shutdown("Users", |rocket| Box::pin(async {
                 rocket.state::<Users>().unwrap().save(&mut File::create(USERS_FILE).expect("Failed to open user file")).expect("Failed to save users");
             })))
@@ -75,6 +76,15 @@ fn add_access_point(input: Json<DataAddAccessPoint>, users: &State<Users>) -> St
         Ok(_) => Status::Ok,
         Err(_) => Status::NotFound,
     }
+}
+
+#[get("/<username>")]
+fn get_user(username: String, users: &State<Users>) -> (Status, Option<String>) {
+    let user = users.get(username);
+    if user.is_none() { return (Status::NotFound, None); }
+    let user = serde_json::to_string(&user.unwrap());
+    if user.is_err() { return (Status::NotFound, None); }
+    (Status::Ok, user.ok())
 }
 
 /// Store list of [`User`]s
