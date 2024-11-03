@@ -62,7 +62,7 @@ async function add_access_point(id) {
   }
   try {
       const response = await fetch("/user/add",{method:"POST",
-        body: JSON.stringify({input:{username : uname, access_point : id}})
+        body: JSON.stringify({username : uname, access_point : id})
       });
   } catch (error) {
     console.error(error.message);
