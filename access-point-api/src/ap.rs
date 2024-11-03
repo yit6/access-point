@@ -122,6 +122,7 @@ pub enum AccessPointStatus {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessPoint {
+    id: Option<APID>,
     name: String,
     kind: AccessPointType,
     location: Location,
@@ -135,6 +136,7 @@ impl AccessPoint {
             name: format!("Access point at {}, {}", lat, long),
             location: Location { lat, long },
             status: AccessPointStatus::NotWorking,
+            id: None,
         }
     }
 
@@ -150,6 +152,11 @@ impl AccessPoint {
 
     pub fn with_name(mut self, name: String) -> Self {
         self.name = name;
+        self
+    }
+
+    pub fn with_id(mut self, id: APID) -> Self {
+        self.id = Some(id);
         self
     }
 }
@@ -194,18 +201,18 @@ impl AccessPoints {
         }
     }
 
-    pub fn add_access_point(&self, access_point: AccessPoint) -> AccessPoint {
+    pub fn add_access_point(&self, access_point: AccessPoint) -> Status {
         let points = Arc::clone(&self.points);
         let id = self.next_id();
         let mut points = points.lock().unwrap();
+        let access_point = access_point.with_id(id);
         points.insert(id, access_point.clone());
-        println!("{:?}", &access_point);
-        access_point
-
+        Status::Ok
     }
 
     pub fn load(path: &Path) -> Option<Self> {
-        let access_points = serde_json::from_str(&fs::read_to_string(path).ok()?).ok()?;
+        let access_points: HashMap<APID, AccessPoint> = serde_json::from_str(&fs::read_to_string(path).ok()?).ok()?;
+
         Some(AccessPoints {
             points: Arc::new(Mutex::new(access_points)),
         })
@@ -224,7 +231,7 @@ impl AccessPoints {
     pub fn get_ap(&self, id: APID) -> Option<AccessPoint> {
         let points = Arc::clone(&self.points);
         let points = points.lock().unwrap();
-        Some(points.get(&id).unwrap().clone())
+        points.get(&id).cloned()
     }
 
     pub fn set_status(&self, id: APID, status: AccessPointStatus) {

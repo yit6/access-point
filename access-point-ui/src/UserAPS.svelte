@@ -17,8 +17,10 @@ onMount(async () => {
 });
 
 let remove = (ap_remove) => {
-	return () => {
-		useraps = useraps.filter(ap => ap != ap_remove);
+	return async () => {
+		fetch(`/user/remove/${username}/${ap_remove.id}`, {method: 'DELETE'}).then(() => {
+			useraps = useraps.filter(ap => ap != ap_remove);
+		});
 	}
 }
 </script>
