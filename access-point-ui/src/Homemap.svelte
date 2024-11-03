@@ -187,4 +187,8 @@ p{
 .status{
   color:rgb(0,0,0)
 }
+
+button{
+  z-index: 10;
+}
 </style>
