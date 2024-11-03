@@ -1,12 +1,12 @@
-{#if hover.hoveredObject}
+{#if true}
     <div class="tooltip">
       <span>
-        <p>{hover.APtype}</p>
+        <p>{hover.name}</p>
         <p class = status>{hover.status}</p>
       </span>
       <span>
         <button>Add to my routine</button>
-        <button>Report as broken</button>
+        <button onclick={(buttonProps) => reportProblem(buttonProps)}>Report as broken</button>
       </span>
       
     </div>
@@ -41,6 +41,8 @@ let viewState = {
 	bearing: 0,
 };
 
+
+
 onMount(() => {
 	createMap();
 	createDeck();
@@ -48,9 +50,23 @@ onMount(() => {
 fetch("/ap/").then(promise => {
 		promise.json().then(aps => {
 			renderLayers({ data: Object.values(aps) });
+      console.log(Object.values(aps))
 		});
 	});
 });
+
+async function reportProblem(props) {
+  try {
+    const url = `/ap/issue/${props.object.id}`;
+    const response = await fetch(url,{method:"PUT"});
+    if (!response.ok) {
+      console.log(response.status);
+    }
+    // ...
+  } catch (error) {
+    console.error(error.message);
+  }
+}
 
 function createMap() {
 	map = new maplibregl.Map({
@@ -110,16 +126,17 @@ function createDataLayers(props) {
 }
 
 function handleHover(layerType, hoverProps) {
-  let APtype, status;
+  let name, status;
   if (layerType === "scatterplotLayer") {
-    APtype = hoverProps.object.name;
+    console.log(hoverProps.object)
+    name = hoverProps.object.name;
     status = hoverProps.object.status;
   }
   // Set the coordinates for the tooltip.
   hover.x = hoverProps.x;
   hover.y = hoverProps.y;
   hover.hoveredObject = hoverProps.object;
-  hover.APtype = APtype;
+  hover.name = name;
   hover.status = status;
 }
 </script>
@@ -148,7 +165,7 @@ function handleHover(layerType, hoverProps) {
   height: 15%;
   background: #ffffff;
   border-radius: 20px;
-  margin-bottom: 2em;
+  margin-bottom: 1em;
   color: #fff;
   font-size: 16px;
   z-index: 9;
