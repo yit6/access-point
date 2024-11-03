@@ -36,18 +36,12 @@ let viewState = {
 onMount(() => {
 	createMap();
 	createDeck();
-	
-  //inputs are put in as longitude then latitude
-	//make the layer reactive to changes, rerender each time layer data is changed
-	let inputAPs = [
-		{ name: "wheelchair lift", coordinates: [-77.671, 43.084], status: "Working" },
-		{ name: "interpreter", coordinates: [-77.672, 43.083], status: "Working"  },
-		{ name: "elevator", coordinates: [-77.673, 43.082], status: "Watermelon"  },
-		{ name: "elevator", coordinates: [-77.674, 43.081], status: "Not working"  },
-	];
 
-
-	renderLayers({ data: inputAPs });
+	let promise = fetch("/ap/").then(promise => {
+		promise.json().then(aps => {
+			renderLayers({ data: Object.values(aps) });
+		});
+	});
 });
 
 function createMap() {
@@ -95,7 +89,7 @@ function createDataLayers(props) {
 	return new ScatterplotLayer({
 		id: "scatterplot",
 		data: data,
-		getPosition: d => d.coordinates,
+		getPosition: d => [d.location.long, d.location.lat],
 		getFillColor: d => [0, 128, 255],
 		getRadius: d => 5,
 		radiusScale: 6,
@@ -103,7 +97,7 @@ function createDataLayers(props) {
 		pickable: true,
 		radiusMinPixels: 0.25,
 		radiusMaxPixels: 30,
-    onClick: (hoverProps) => handleHover("scatterplotLayer", hoverProps),
+    		onClick: (hoverProps) => handleHover("scatterplotLayer", hoverProps),
 	});
 }
 
