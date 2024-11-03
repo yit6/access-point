@@ -188,10 +188,10 @@ impl AccessPoints {
 
 	pub fn create_from_lat_long(&self, lat: f32, long: f32) -> AccessPoint {
 		let points = Arc::clone(&self.points);
+                let id = self.next_id();
 		let mut points = points.lock().unwrap();
 		let access_point = AccessPoint::from_lat_long(lat, long);
-		points.insert(self.next_id(), access_point.clone());
-		println!("{:?}", &access_point);
+		points.insert(id, access_point.clone());
 		access_point
 
 	}
