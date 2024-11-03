@@ -1,5 +1,5 @@
 <script>
-    let {name,status} = $props();
+    let {name,status,apProps} = $props();
     async function reportProblem(props) {
         try {
             const url = `/ap/issue/${props.object.id}`;
@@ -21,7 +21,7 @@
     </span>
     <span>
       <button>Add to my routine</button>
-      <button onclick={console.log("clicked")}>Report as broken</button>
+      <button onclick={()=>console.log("clicked")}>Report as broken</button>
     </span>
     
   </div>
@@ -36,7 +36,6 @@
         color: #fff;
         font-size: 16px;
         z-index: 9;
-        pointer-events: none;
     }
 
     button{
