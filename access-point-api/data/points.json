@@ -1,0 +1,5 @@
+{
+"0":{"id":0,"name":"Wheelchair lift","kind":{"Any":""},"location":{"lat":43.083972,"long":-77.673761},"status":"Working"},
+"1":{"id":1,"name":"Accessible ramp","kind":{"Any":""},"location":{"lat":43.083453,"long":-77.679807},"status":"Working"},
+"2":{"id":2,"name":"Interpreter","kind":{"Any":""},"location":{"lat":43.084389,"long":-77.676349},"status":"Working"}
+}
