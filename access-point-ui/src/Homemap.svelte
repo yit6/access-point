@@ -1,5 +1,14 @@
-{#if true}
-    <Infocard />
+{#if hover.hoveredObject}
+  <div class="tooltip">
+    <span>
+      <p>{hover.hoveredObject.name}</p>
+      <p class = status>{hover.hoveredObject.status}</p>
+    </span>
+    <span>
+      <button>Add to my routine</button>
+      <button onclick={(hoverObj)=>reportProblem(hoverObj)}>Report as broken</button>
+    </span> 
+</div>
 {/if}
 <div class="deck-container">
 	<div id="map" bind:this={mapElement}></div>
@@ -32,6 +41,17 @@ let viewState = {
 	bearing: 0,
 };
 
+async function reportProblem(APprops) {
+        try {
+            const url = `/ap/issue/${APprops.object.id}`;
+            const response = await fetch(url,{method:"PUT"});
+            if (!response.ok) {
+            console.log(response.status);
+            }
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
 
 
 onMount(() => {
