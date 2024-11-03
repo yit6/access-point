@@ -1,11 +1,19 @@
 <script>
 import APCard from './APCard.svelte';
+import Logout from './Logout.svelte';
 import { onMount } from 'svelte';
 let useraps = $state([ ]);
-let username = "yit";
+
+let name = document.cookie.split(";").find((row)=>row.trim().startsWith("username="));
+console.log(name);
+if (name == undefined || name.split('=').length == 1) {
+	window.location.href="/login/index.html";
+} else {
+	name = name.split('=')[1];
+}
 
 onMount(async () => {
-	let res = await fetch(`/user/${username}`);
+	let res = await fetch(`/user/${name}`);
 	let user = await res.json();
 	user.access_points.forEach(async (id) => {
 		let res = await fetch(`/ap/${id}`);
@@ -18,7 +26,7 @@ onMount(async () => {
 
 let remove = (ap_remove) => {
 	return async () => {
-		fetch(`/user/remove/${username}/${ap_remove.id}`, {method: 'DELETE'}).then(() => {
+		fetch(`/user/remove/${name}/${ap_remove.id}`, {method: 'DELETE'}).then(() => {
 			useraps = useraps.filter(ap => ap != ap_remove);
 		});
 	}
@@ -34,3 +42,4 @@ let remove = (ap_remove) => {
 	<li><p>Loading...</p></li>
 	{/each}
 </ul>
+<Logout />

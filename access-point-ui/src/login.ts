@@ -1,8 +1,8 @@
 import { mount } from 'svelte'
-import UserAPS from './UserAPS.svelte'
+import Login from './Login.svelte'
 
-const user_aps = mount(UserAPS, {
-  target: document.getElementById('user-aps')!,
+const login = mount(Login, {
+  target: document.getElementById('login')!,
 })
 
-export default user_aps
+export default login
