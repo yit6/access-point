@@ -55,6 +55,11 @@ async function reportProblem(APprops) {
 
 async function add_access_point(id) {
   let uname = document.cookie.split(";").find((row)=>row.trim().startsWith("username="));
+  if (uname == undefined || uname.split('=').length == 1) {
+	window.location.href="/login/index.html";
+  } else {
+	  uname = uname.split('=')[1];
+  }
   try {
       const response = await fetch("/user/add",{method:"POST",
         body: JSON.stringify({input:{username : uname, access_point : id}})
