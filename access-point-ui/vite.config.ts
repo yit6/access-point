@@ -9,6 +9,7 @@ export default defineConfig({
       input: {
         main: 'index.html',
         useraps: 'useraps/index.html',
+        login: 'login/index.html',
       },
     },
   },
