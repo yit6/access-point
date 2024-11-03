@@ -43,7 +43,7 @@ let viewState = {
 
 async function reportProblem(APprops) {
         try {
-            const url = `/ap/issue/${APprops.object.id}`;
+            const url = `/ap/issue/${APprops}`;
             const response = await fetch(url,{method:"PUT"});
             if (!response.ok) {
             console.log(response.status);
@@ -62,7 +62,7 @@ async function add_access_point(id) {
   }
   try {
       const response = await fetch("/user/add",{method:"POST",
-        body: JSON.stringify({input:{username : uname, access_point : id}})
+        body: JSON.stringify({username : uname, access_point : id})
       });
   } catch (error) {
     console.error(error.message);
@@ -99,7 +99,7 @@ function createDeck() {
 		width: "100%",
 		height: "100%",
 		initialViewState: viewState,
-		controller: {dragRotate: false},
+		controller: {dragRotate: false,inertia: 400},
 		// Change the map's viewState whenever the view state of deck.gl changes.
 		onViewStateChange: ({ viewState }) => {
 			map.jumpTo({
@@ -129,7 +129,12 @@ function createDataLayers(props) {
 		id: "scatterplot",
 		data: data,
 		getPosition: d => [d.location.long, d.location.lat],
-		getFillColor: d => [0, 128, 255],
+		getFillColor: d => {
+			if (d.status[0] == 'N') { return [255,0,0]; }
+			if (d.status[0] == 'I') { return [255,128,0]; }
+			if (d.status[0] == 'W') { return [0,128,255]; }
+			console.log(d); return [255, 0, 255];
+		},
 		getRadius: d => 5,
 		radiusScale: 6,
 		opacity: 0.5,
