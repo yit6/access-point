@@ -5,7 +5,7 @@ use rocket::{fairing::AdHoc, http::{ContentType, Status}, serde::{json::Json, De
 use pwhash::bcrypt;
 use serde::Serialize;
 
-use crate::ap::APID;
+use crate::ap::{AccessPointStatus, APID};
 
 const USERS_FILE: &str = "data/users.json";
 
@@ -182,5 +182,9 @@ impl Users {
                 None
             }
         }).collect()
+    }
+
+    pub fn inform_users(&self, id: APID, change: AccessPointStatus) {
+        self.get_users_with_access_point(id).iter().for_each(|name| println!("{name}"));
     }
 }

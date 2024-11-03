@@ -68,8 +68,9 @@ impl Report {
     }
 
     // change the result
-    pub fn fulfill(&self, group: &State<AccessPoints>) -> Result<(), ()> {
+    pub fn fulfill(&self, group: &State<AccessPoints>, users: &State<Users>) -> Result<(), ()> {
         group.set_status(self.point, self.status_change);
+        users.inform_users(self.point, self.status_change);
         Ok(())
     }
 }
@@ -273,7 +274,7 @@ fn get_group(group: &State<AccessPoints>) -> (Status, AccessPointsSerDe) {
 fn report_issue(id: APID, group: &State<AccessPoints>, users: &State<Users>) -> Status {
     Report::new(id)
         .with_status(AccessPointStatus::NotWorking)
-        .fulfill(group);
+        .fulfill(group, users);
 
     Status::Ok
 }
