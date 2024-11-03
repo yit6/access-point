@@ -175,10 +175,8 @@ impl AccessPoints {
 		}
 	}
 
+	// guaranteed lock
 	fn next_id(&self) -> APID {
-		let points = Arc::clone(&self.points);
-		let points = points.lock().unwrap();
-		
 		if points.keys().len() == 0 {
 			0
 		} else {
