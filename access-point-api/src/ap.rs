@@ -113,6 +113,16 @@ impl RawAccessPointType {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessPointType(RawAccessPointType);
 
+impl ToString for AccessPointType {
+    fn to_string(&self) -> String {
+        match &self.0 {
+            RawAccessPointType::Wheelchair => "Wheelchair service".to_string(),
+            RawAccessPointType::Interpreter => "Language interpreter".to_string(),
+            RawAccessPointType::Any(s) => if s == "" { "Miscellaneous".to_string() } else { s.to_string() },
+        }
+    }
+}
+
 #[derive(Debug, Default, Copy, Clone, Serialize, Deserialize)]
 pub enum AccessPointStatus {
     Working,
@@ -136,6 +146,7 @@ pub struct AccessPoint {
     id: Option<APID>,
     name: String,
     kind: AccessPointType,
+    pub nice_kind: String,
     location: Location,
     pub status: AccessPointStatus,
     pub nice_status: String,
@@ -149,12 +160,14 @@ impl AccessPoint {
             location: Location { lat, long },
             status: AccessPointStatus::NotWorking,
             id: None,
-            nice_status: AccessPointStatus::NotWorking.to_string()
+            nice_status: AccessPointStatus::NotWorking.to_string(),
+            nice_kind: AccessPointType(RawAccessPointType::Any("".to_string())).to_string(),
         }
     }
 
     pub fn with_type(mut self, kind: AccessPointType) -> Self {
-        self.kind = kind;
+        self.kind = kind.clone();
+        self.nice_kind = kind.to_string();
         self
     }
 
