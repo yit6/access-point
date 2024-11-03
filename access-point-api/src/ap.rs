@@ -120,6 +120,16 @@ pub enum AccessPointStatus {
     NotWorking,
 }
 
+impl ToString for AccessPointStatus {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Working => "in working order!".to_string(),
+            Self::InRepair => "being repaired!".to_string(),
+            Self::NotWorking => "not currently operational.".to_string(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccessPoint {
     id: Option<APID>,
@@ -127,6 +137,7 @@ pub struct AccessPoint {
     kind: AccessPointType,
     location: Location,
     pub status: AccessPointStatus,
+    pub nice_status: String,
 }
 
 impl AccessPoint {
@@ -137,6 +148,7 @@ impl AccessPoint {
             location: Location { lat, long },
             status: AccessPointStatus::NotWorking,
             id: None,
+            nice_status: AccessPointStatus::NotWorking.to_string()
         }
     }
 
@@ -147,6 +159,7 @@ impl AccessPoint {
 
     pub fn with_status(mut self, status: AccessPointStatus) -> Self {
         self.status = status;
+        self.nice_status = status.to_string();
         self
     }
 

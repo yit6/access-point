@@ -47,6 +47,7 @@ let remove = (ap_remove) => {
 }
 </script>
 
+<main>
 <ul>
 	{#each useraps as ap}
 	<li>
@@ -58,3 +59,4 @@ let remove = (ap_remove) => {
 </ul>
 <Logout />
 <BottomBar />
+</main>
