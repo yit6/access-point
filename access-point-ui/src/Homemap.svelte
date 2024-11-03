@@ -35,7 +35,7 @@ onMount(() => {
 	];
 
 	console.log(inputAPs[0].position)
-	$: renderLayers({ data: inputAPs });
+	renderLayers({ data: inputAPs });
 });
 
 function createMap() {
@@ -72,7 +72,7 @@ function createDeck() {
 // See https://deck.gl/docs/api-reference/core/deck#layers.
 function renderLayers(props) {
 	// If `deck` is null then return early to prevent errors.
-	if (!deck) {console.error("deck is null"); return; }
+	if (!deck) { console.error("deck is null"); return; }
 	console.info("HEREEEE!!!!!!!!!!!!");
 
 	deck.setProps({
@@ -82,6 +82,7 @@ function renderLayers(props) {
 
 function createDataLayers(props) {
 	const {data} = props;
+	console.debug("making layers");
 	return new ScatterplotLayer({
 		id: "scatterplot",
 		getPosition: d => d.coordinates,
@@ -106,4 +107,12 @@ function createDataLayers(props) {
 	background: #e5e9ec;
 	overflow: hidden;
 }
+
+#deck-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
 </style>
