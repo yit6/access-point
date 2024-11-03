@@ -28,10 +28,10 @@ onMount(() => {
 	
 	//make the layer reactive to changes, rerender each time layer data is changed
 	let inputAPs = [
-		{
-			name: "myfakedata",
-			position: [-77.67, 43.08]
-		}
+		{ name: "wheelchair lift", coordinates: [-77.671, 43.084] },
+		{ name: "interpreter", coordinates: [-77.672, 43.083] },
+		{ name: "elevator", coordinates: [-77.673, 43.082] },
+		{ name: "elevator", coordinates: [-77.674, 43.081] },
 	];
 
 	console.log(inputAPs[0].position)
@@ -85,6 +85,7 @@ function createDataLayers(props) {
 	console.debug("making layers");
 	return new ScatterplotLayer({
 		id: "scatterplot",
+		data: data,
 		getPosition: d => d.coordinates,
 		getFillColor: d => [0, 128, 255],
 		getRadius: d => 5000,
