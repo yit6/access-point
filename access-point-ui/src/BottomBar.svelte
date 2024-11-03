@@ -2,8 +2,8 @@
 
 </script>
 <div class = "bottom">
-    <img src = "home.svg"/>
-    <img src = "user.svg"/>
+    <a href="/"><img src = "home.svg"/></a>
+    <a href="/useraps/index.html"><img src = "user.svg"/></a>
 </div>
 
 
