@@ -1,13 +1,14 @@
 {#if hover.hoveredObject}
     <div class="tooltip">
-      <p>{hover.APtype}    </p>
+      <p>{hover.APtype}</p>
       <p>{hover.status}</p>
     </div>
-  {/if}
+{/if}
 <div class="deck-container">
 	<div id="map" bind:this={mapElement}></div>
 	<canvas id="deck-canvas" bind:this={canvasElement}></canvas>
 </div>
+
 
 <script>
 import { onMount } from "svelte";
@@ -37,7 +38,7 @@ onMount(() => {
 	createMap();
 	createDeck();
 
-	let promise = fetch("/ap/").then(promise => {
+fetch("/ap/").then(promise => {
 		promise.json().then(aps => {
 			renderLayers({ data: Object.values(aps) });
 		});
@@ -60,7 +61,7 @@ function createDeck() {
 		width: "100%",
 		height: "100%",
 		initialViewState: viewState,
-		controller: true,
+		controller: {dragRotate: false},
 		// Change the map's viewState whenever the view state of deck.gl changes.
 		onViewStateChange: ({ viewState }) => {
 			map.jumpTo({
@@ -136,20 +137,23 @@ function handleHover(layerType, hoverProps) {
 }
 
 .tooltip {
-  margin-top:50px;
-  position: fixed;
-  display:flex;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background:  #75778d;
-  border-radius: 20px 20px 0 0;
-  color: #ffffff;
+  width: 90%;
+  height: 15%;
+  background: #75778d;
+  border-radius: 20px;
+  color: #fff;
   opacity: 80%;
   font-size: 10px;
   z-index: 9;
   pointer-events: none;
 }
 
+.UI-overlay{
+  height: 100%;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
 
 </style>
